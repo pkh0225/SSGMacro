@@ -84,7 +84,7 @@ public struct FluentSetterMacro: MemberMacro {
                 return (name: name.text, type: type.description)
             }
 
-            // 타입이 명시되지 않은 경우, 초기화 값으로 타입 추론
+            // 타입이 명시되지 않은 경우, 초기화 값으로 타입 추론(// 다른 타입도 있을텐데... 일단 여기까지)
             if let initializer = patternBinding.initializer?.value {
                 switch initializer.syntaxNodeType {
                 case is IntegerLiteralExprSyntax.Type:
@@ -158,7 +158,6 @@ public struct FluentSetterMacro: MemberMacro {
                         // 다른 타입도 있을텐데... 일단 여기까지
                     }
                 }
-
             }
         }
 
