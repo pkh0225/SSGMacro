@@ -81,6 +81,17 @@ public struct FluentSetterMacro: MemberMacro {
 
             // 명시된 타입이 있는 경우 처리
             if let type = patternBinding.typeAnnotation?.type {
+                if let typeName = type.as(IdentifierTypeSyntax.self)?.name {
+                    return (name: name.text, type: typeName.text)
+                }
+                if let typeName = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType.as(IdentifierTypeSyntax.self)?.name {
+                    return (name: name.text, type: typeName.text)
+                }
+                if let typeName = type.as(OptionalTypeSyntax.self)?.wrappedType.as(IdentifierTypeSyntax.self)?.name,
+                   let questionMark = type.as(OptionalTypeSyntax.self)?.questionMark.text {
+                    return (name: name.text, type: typeName.text + questionMark)
+                }
+
                 return (name: name.text, type: type.description)
             }
 
@@ -90,7 +101,7 @@ public struct FluentSetterMacro: MemberMacro {
                 case is IntegerLiteralExprSyntax.Type:
                     return (name: name.text, type: "Int")
                 case is FloatLiteralExprSyntax.Type:
-                    return (name: name.text, type: "Double")
+                    return (name: name.text, type: "CGFloat")
                 case is StringLiteralExprSyntax.Type:
                     return (name: name.text, type: "String")
                 case is BooleanLiteralExprSyntax.Type:

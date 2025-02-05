@@ -15,6 +15,114 @@ let testMacros: [String: Macro.Type] = [
 #endif
 
 final class MyMacroTests: XCTestCase {
+
+    func testEnumFluentSetterMacro() throws {
+        #if canImport(SSGMacroMacros)
+        assertMacroExpansion(
+            """
+            @fluentSetterMacro()
+            class TestClass {
+                var aaa: CGRect // 주석
+            }
+            """,
+            expandedSource: """
+            class TestClass {
+                var aaa: CGRect // 주석
+            
+                func aaa(_ value: CGRect) -> Self {
+                    self.aaa = value
+                    return self
+                }
+            }
+            """,
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+
+    func testCGFloatFluentSetterMacro() throws {
+        #if canImport(SSGMacroMacros)
+        assertMacroExpansion(
+            """
+            @fluentSetterMacro()
+            class TestClass {
+                var aaa = 0.1 // 주석
+                var bbb = CGFloat(0.1) // 주석
+                var ccc = Double(0.1) // 주석
+            }
+            """,
+            expandedSource: """
+            class TestClass {
+                var aaa = 0.1 // 주석
+                var bbb = CGFloat(0.1) // 주석
+                var ccc = Double(0.1) // 주석
+            
+                func aaa(_ value: CGFloat) -> Self {
+                    self.aaa = value
+                    return self
+                }
+
+                func bbb(_ value: CGFloat) -> Self {
+                    self.bbb = value
+                    return self
+                }
+            
+                func ccc(_ value: Double) -> Self {
+                    self.ccc = value
+                    return self
+                }
+            }
+            """,
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+
+
+    func testTypeMarkFluentSetterMacro() throws {
+        #if canImport(SSGMacroMacros)
+        assertMacroExpansion(
+            """
+            @fluentSetterMacro()
+            class TestClass {
+                var aaa: Int // 주석
+                var bbb: Int! // 주석
+                var ccc: Int? // 주석
+            }
+            """,
+            expandedSource: """
+            class TestClass {
+                var aaa: Int // 주석
+                var bbb: Int! // 주석
+                var ccc: Int? // 주석
+
+                func aaa(_ value: Int) -> Self {
+                    self.aaa = value
+                    return self
+                }
+
+                func bbb(_ value: Int) -> Self {
+                    self.bbb = value
+                    return self
+                }
+
+                func ccc(_ value: Int?) -> Self {
+                    self.ccc = value
+                    return self
+                }
+            }
+            """,
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+
     func testSequenceFluentSetterMacro() throws {
         #if canImport(SSGMacroMacros)
         assertMacroExpansion(
@@ -80,7 +188,7 @@ final class MyMacroTests: XCTestCase {
                 // 나와야 하는 속성
                 var aaa: Int = 1 // 주석
 
-                func aaa(_ value: Int ) -> Self {
+                func aaa(_ value: Int) -> Self {
                     self.aaa = value
                     return self
                 }
@@ -389,7 +497,7 @@ final class MyMacroTests: XCTestCase {
                 var aaa2: Bool?
                 var aaa3 = false
 
-                func aaa(_ value: Bool ) -> Self {
+                func aaa(_ value: Bool) -> Self {
                     self.aaa = value
                     return self
                 }
@@ -429,7 +537,7 @@ final class MyMacroTests: XCTestCase {
                 var aaa2: String?
                 var aaa3 = "123"
 
-                func aaa(_ value: String ) -> Self {
+                func aaa(_ value: String) -> Self {
                     self.aaa = value
                     return self
                 }
@@ -469,7 +577,7 @@ final class MyMacroTests: XCTestCase {
                 var aaa2: Double?
                 var aaa3 = 1.0
 
-                func aaa(_ value: Double ) -> Self {
+                func aaa(_ value: Double) -> Self {
                     self.aaa = value
                     return self
                 }
@@ -479,7 +587,7 @@ final class MyMacroTests: XCTestCase {
                     return self
                 }
 
-                func aaa3(_ value: Double) -> Self {
+                func aaa3(_ value: CGFloat) -> Self {
                     self.aaa3 = value
                     return self
                 }
@@ -509,7 +617,7 @@ final class MyMacroTests: XCTestCase {
                 var aaa2: Int?
                 var aaa3 = 1
 
-                func aaa(_ value: Int ) -> Self {
+                func aaa(_ value: Int) -> Self {
                     self.aaa = value
                     return self
                 }
