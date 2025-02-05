@@ -15,6 +15,32 @@ let testMacros: [String: Macro.Type] = [
 #endif
 
 final class MyMacroTests: XCTestCase {
+    func testSequenceFluentSetterMacro() throws {
+        #if canImport(SSGMacroMacros)
+        assertMacroExpansion(
+            """
+            @fluentSetterMacro()
+            class TestClass {
+                var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열
+            }
+            """,
+            expandedSource: """
+            class TestClass {
+                var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열
+
+                func mixedArray(_ value: [Any]) -> Self {
+                    self.mixedArray = value
+                    return self
+                }
+            }
+            """,
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+
     func testExceptionFluentSetterMacro() throws {
         #if canImport(SSGMacroMacros)
         assertMacroExpansion(
@@ -34,7 +60,7 @@ final class MyMacroTests: XCTestCase {
                 }
             
                 // 나와야 하는 속성
-                var aaa: Int = 1
+                var aaa: Int = 1 // 주석
             }
             """,
             expandedSource: """
@@ -52,7 +78,7 @@ final class MyMacroTests: XCTestCase {
                 }
 
                 // 나와야 하는 속성
-                var aaa: Int = 1
+                var aaa: Int = 1 // 주석
 
                 func aaa(_ value: Int ) -> Self {
                     self.aaa = value
@@ -302,7 +328,6 @@ final class MyMacroTests: XCTestCase {
                 var array1 = [Int]()   // 타입이 명시된 빈 배열
                 var array2: [String] = []  // 타입이 명시된 빈 배열
                 var array3 = [1, 2, 3]  // 초기화 값 기반 타입 추론
-            //    var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열 지원하지 않음
                 var mixedArray2 = [Any]()  // 혼합된 타입 배열
             }
             """,
@@ -312,7 +337,6 @@ final class MyMacroTests: XCTestCase {
                 var array1 = [Int]()   // 타입이 명시된 빈 배열
                 var array2: [String] = []  // 타입이 명시된 빈 배열
                 var array3 = [1, 2, 3]  // 초기화 값 기반 타입 추론
-            //    var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열 지원하지 않음
                 var mixedArray2 = [Any]()  // 혼합된 타입 배열
 
                 func array(_ value: Array<Int>) -> Self {

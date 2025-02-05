@@ -15,7 +15,6 @@ public enum WeakSelfClosure: ExpressionMacro {
         guard var closure = node.trailingClosure else {
             throw SomeError.invalidInputType
         }
-        var signature = closure.signature
         let weakSelfCapture = ClosureCaptureSyntax(
             specifier: .init(specifier: "weak"),
             expression: DeclReferenceExprSyntax(baseName: "self")

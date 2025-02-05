@@ -73,9 +73,7 @@ public struct FluentSetterMacro: MemberMacro {
 
     private static func properties(from storedProperties: [VariableDeclSyntax]) -> [(name: String, type: String)] {
         storedProperties.compactMap { property -> (name: String, type: String)? in
-            guard let patternBinding = property.bindings.first?.as(PatternBindingSyntax.self) else {
-                return nil
-            }
+            guard let patternBinding = property.bindings.first else { return nil }
             // 변수 이름 추출
             guard let name = patternBinding.pattern.as(IdentifierPatternSyntax.self)?.identifier else {
                 return nil
@@ -99,8 +97,8 @@ public struct FluentSetterMacro: MemberMacro {
                     return (name: name.text, type: "Bool")
                 case is ArrayExprSyntax.Type:
                     return (name: name.text, type: inferArrayType(initializer))
-//                case is SequenceExprSyntax.Type:
-//                    return (name: name.text, type: [inferSequenceType(initializer)])
+                case is SequenceExprSyntax.Type:
+                    return (name: name.text, type: inferSequenceType(initializer))
                 case is DictionaryExprSyntax.Type:
                     return (name: name.text, type: inferDictionaryType(initializer))
                 case is ClosureExprSyntax.Type:
@@ -137,19 +135,34 @@ public struct FluentSetterMacro: MemberMacro {
     private static func inferSequenceType(_ initializer: ExprSyntax) -> String {
         guard let sequenceExpr = initializer.as(SequenceExprSyntax.self) else { return "[Any]" }
 
-        let elementTypes = sequenceExpr.elements.compactMap { element -> String? in
-            if let expr = element.as(ExprSyntax.self) {
-                return inferLiteralType(expr)
+        let elements = sequenceExpr.elements
+        for index in elements.indices {
+            let element = elements[index]
+
+            if let operatorExpr = element.as(UnresolvedAsExprSyntax.self) {
+                if operatorExpr.asKeyword.tokenKind == .keyword(.as) {
+                    // ✅ 안전한 인덱스 접근
+                    let nextIndex = elements.index(after: index)
+                    if nextIndex < elements.endIndex {
+                        let nextElement = elements[nextIndex]
+
+//                        // TypeExprSyntax로 시도
+                        if let typeExpr = nextElement.as(TypeExprSyntax.self) {
+                            if let arrayType = typeExpr.type.as(ArrayTypeSyntax.self) {
+                                if let elementType = arrayType.element.as(IdentifierTypeSyntax.self) {
+                                    return "[\(elementType.name.text)]"
+                                }
+                            }
+                        }
+
+                        // 다른 타입도 있을텐데... 일단 여기까지
+                    }
+                }
+
             }
-            return nil
         }
 
-        // 모든 요소가 같은 타입인지 확인
-        if let firstType = elementTypes.first, elementTypes.allSatisfy({ $0 == firstType }) {
-            return firstType
-        } else {
-            return "Any"
-        }
+        return "Any" // 기본값
     }
 
     // 🔍 리터럴 타입 추론 (공통 함수)
