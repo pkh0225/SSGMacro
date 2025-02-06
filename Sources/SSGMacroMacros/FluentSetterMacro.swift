@@ -99,7 +99,7 @@ public struct FluentSetterMacro: MemberMacro {
         }
         else if let type = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
             if let wrappedType = type.wrappedType.as(TupleTypeSyntax.self) {
-                return "@escaping \(inferTypeSyntax(type.wrappedType))"
+                return "@escaping \(wrappedType.elements.description)"
             }
             return inferTypeSyntax(type.wrappedType)
         }

@@ -279,7 +279,7 @@ final class MyMacroTests: XCTestCase {
                     return self
                 }
 
-                func closuer2(_ value: @escaping ((Int) -> String)) -> Self {
+                func closuer2(_ value: @escaping (Int) -> String) -> Self {
                     self.closuer2 = value
                     return self
                 }
