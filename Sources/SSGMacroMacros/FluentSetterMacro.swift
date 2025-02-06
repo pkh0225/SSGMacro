@@ -81,58 +81,87 @@ public struct FluentSetterMacro: MemberMacro {
 
             // 명시된 타입이 있는 경우 처리
             if let type = patternBinding.typeAnnotation?.type {
-                if let typeName = type.as(IdentifierTypeSyntax.self)?.name {
-                    return (name: name.text, type: typeName.text)
-                }
-                if let typeName = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType.as(IdentifierTypeSyntax.self)?.name {
-                    return (name: name.text, type: typeName.text)
-                }
-                if let typeName = type.as(OptionalTypeSyntax.self)?.wrappedType.as(IdentifierTypeSyntax.self)?.name,
-                   let questionMark = type.as(OptionalTypeSyntax.self)?.questionMark.text {
-                    return (name: name.text, type: typeName.text + questionMark)
-                }
-
-                return (name: name.text, type: type.description)
+                return (name: name.text, type: inferTypeSyntax(type))
             }
 
             // 타입이 명시되지 않은 경우, 초기화 값으로 타입 추론(// 다른 타입도 있을텐데... 일단 여기까지)
-            if let initializer = patternBinding.initializer?.value {
-                switch initializer.syntaxNodeType {
-                case is IntegerLiteralExprSyntax.Type:
-                    return (name: name.text, type: "Int")
-                case is FloatLiteralExprSyntax.Type:
-                    return (name: name.text, type: "CGFloat")
-                case is StringLiteralExprSyntax.Type:
-                    return (name: name.text, type: "String")
-                case is BooleanLiteralExprSyntax.Type:
-                    return (name: name.text, type: "Bool")
-                case is ArrayExprSyntax.Type:
-                    return (name: name.text, type: inferArrayType(initializer))
-                case is SequenceExprSyntax.Type:
-                    return (name: name.text, type: inferSequenceType(initializer))
-                case is DictionaryExprSyntax.Type:
-                    return (name: name.text, type: inferDictionaryType(initializer))
-                case is ClosureExprSyntax.Type:
-                    return (name: name.text, type: "ClosureExprSyntax none")
-                case is TupleExprSyntax.Type:
-                    return (name: name.text, type: inferTupleType(initializer))
-                case is FunctionCallExprSyntax.Type:
-                    return (name: name.text, type: initializer.as(FunctionCallExprSyntax.self)?.calledExpression.description ?? "FunctionCallExprSyntax none")
-                default:
-                    return (name: name.text, type: "default none")
-                }
+            if let expr = patternBinding.initializer?.value {
+                return (name: name.text, type: inferExprSyntax(expr))
             }
-
             return nil
         }
     }
 
+    private static func inferTypeSyntax(_ type: TypeSyntax?) -> String {
+        guard let type else { return "" }
+        if let type = type.as(IdentifierTypeSyntax.self) {
+            return type.name.text
+        }
+        else if let type = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
+            if let wrappedType = type.wrappedType.as(TupleTypeSyntax.self) {
+                return "@escaping \(inferTypeSyntax(type.wrappedType))"
+            }
+            return inferTypeSyntax(type.wrappedType)
+        }
+        else if let type = type.as(OptionalTypeSyntax.self) {
+            return inferTypeSyntax(type.wrappedType) + type.questionMark.text
+        }
+        else if let type = type.as(TupleTypeSyntax.self) {
+            return type.leftParen.text + type.elements.description + type.rightParen.text
+        }
+        else if let type = type.as(MetatypeTypeSyntax.self) {
+            return inferTypeSyntax(type.baseType) + type.period.text + type.metatypeSpecifier.text
+        }
+        else if let type = type.as(ArrayTypeSyntax.self) {
+            return type.leftSquare.text + type.element.description + type.rightSquare.text
+        }
+        else if let type = type.as(DictionaryTypeSyntax.self) {
+            return type.leftSquare.text + inferTypeSyntax(type.key) + type.colon.text + inferTypeSyntax(type.value) + type.rightSquare.text
+        }
+
+        return type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    // 🔍 리터럴 타입 추론 (공통 함수)
+    private static func inferExprSyntax(_ expr: ExprSyntax?) -> String {
+        guard let expr else { return "" }
+        switch expr.syntaxNodeType {
+        case is IntegerLiteralExprSyntax.Type:
+            return "Int"
+        case is FloatLiteralExprSyntax.Type:
+            return "CGFloat"
+        case is StringLiteralExprSyntax.Type:
+            return "String"
+        case is BooleanLiteralExprSyntax.Type:
+            return "Bool"
+        case is ClosureExprSyntax.Type:
+            return inferClosureExprSyntax(expr)
+        case is ArrayExprSyntax.Type:
+            return inferArrayExprSyntax(expr)
+        case is DictionaryExprSyntax.Type:
+            return inferDictionaryExprSyntax(expr)
+        case is TupleExprSyntax.Type:
+            return inferTupleExprSyntax(expr)
+        case is FunctionCallExprSyntax.Type:
+            return inferFunctionCallExprSyntax(expr)
+        case is SequenceExprSyntax.Type:
+            return inferSequenceExprSyntax(expr)
+        case is NilLiteralExprSyntax.Type:
+            return "Nil"
+        case is KeyPathExprSyntax.Type:
+            return "KeyPath"
+
+        default:
+            return expr.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
     // 🔍 배열 타입 추론 함수
-    private static func inferArrayType(_ initializer: ExprSyntax) -> String {
-        guard let arrayExpr = initializer.as(ArrayExprSyntax.self) else { return "[Any]" }
+    private static func inferArrayExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let arrayExpr = expr.as(ArrayExprSyntax.self) else { return "[Any]" }
 
         let elementTypes = arrayExpr.elements.compactMap { element -> String? in
-            return inferLiteralType(element.expression)
+            return inferExprSyntax(element.expression)
         }
 
         // 요소들이 모두 같은 타입인지 확인
@@ -143,8 +172,8 @@ public struct FluentSetterMacro: MemberMacro {
         }
     }
 
-    private static func inferSequenceType(_ initializer: ExprSyntax) -> String {
-        guard let sequenceExpr = initializer.as(SequenceExprSyntax.self) else { return "[Any]" }
+    private static func inferSequenceExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let sequenceExpr = expr.as(SequenceExprSyntax.self) else { return "[Any]" }
 
         let elements = sequenceExpr.elements
         for index in elements.indices {
@@ -156,17 +185,9 @@ public struct FluentSetterMacro: MemberMacro {
                     let nextIndex = elements.index(after: index)
                     if nextIndex < elements.endIndex {
                         let nextElement = elements[nextIndex]
-
-//                        // TypeExprSyntax로 시도
                         if let typeExpr = nextElement.as(TypeExprSyntax.self) {
-                            if let arrayType = typeExpr.type.as(ArrayTypeSyntax.self) {
-                                if let elementType = arrayType.element.as(IdentifierTypeSyntax.self) {
-                                    return "[\(elementType.name.text)]"
-                                }
-                            }
+                            return inferTypeSyntax(typeExpr.type)
                         }
-
-                        // 다른 타입도 있을텐데... 일단 여기까지
                     }
                 }
             }
@@ -175,75 +196,84 @@ public struct FluentSetterMacro: MemberMacro {
         return "Any" // 기본값
     }
 
-    // 🔍 리터럴 타입 추론 (공통 함수)
-    private static func inferLiteralType(_ expr: ExprSyntax?) -> String? {
-        guard let expr = expr else { return nil }
-
-        switch expr.syntaxNodeType {
-        case is IntegerLiteralExprSyntax.Type:
-            return "Int"
-        case is FloatLiteralExprSyntax.Type:
-            return "CGFloat"
-        case is StringLiteralExprSyntax.Type:
-            return "String"
-        case is BooleanLiteralExprSyntax.Type:
-            return "Bool"
-        case is ArrayExprSyntax.Type:
-            return "[Any]"
-        case is DictionaryExprSyntax.Type:
-            return "[AnyHashable: Any]"
-        case is NilLiteralExprSyntax.Type:
-            return "Nil"
-        case is TupleExprSyntax.Type:
-            return "(Any, Any)" // 튜플의 경우 요소를 상세히 분석할 수 있음
-        case is KeyPathExprSyntax.Type:
-            return "KeyPath"
-        case is ClosureExprSyntax.Type:
-            return "() -> Void" // 기본적으로 클로저 타입, 파라미터 및 반환값 분석 가능
-        default:
-            return "Any"
-        }
-    }
-
     // 🔑 딕셔너리 타입 추론 함수
-    private static func inferDictionaryType(_ initializer: ExprSyntax) -> String {
-        guard let dictExpr = initializer.as(DictionaryExprSyntax.self) else { return "[AnyHashable: Any]" }
+    private static func inferDictionaryExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let dictExpr = expr.as(DictionaryExprSyntax.self) else { return "[AnyHashable: Any]" }
 
         var keyTypes: Set<String> = []
         var valueTypes: Set<String> = []
 
         dictExpr.content.as(DictionaryElementListSyntax.self)?.forEach { element in
             // keyExpression과 valueExpression에 대해 타입 추론
-            if let keyType = inferLiteralType(element.key) {
-                keyTypes.insert(keyType)
-            }
-            if let valueType = inferLiteralType(element.value) {
-                valueTypes.insert(valueType)
-            }
+            keyTypes.insert(inferExprSyntax(element.key))
+            valueTypes.insert(inferExprSyntax(element.value))
         }
 
         // 키 타입과 값 타입이 하나만 있으면 해당 타입을 사용, 아니면 Any
-        let keyType = keyTypes.count == 1 ? keyTypes.first! : "AnyHashable"
-        let valueType = valueTypes.count == 1 ? valueTypes.first! : "Any"
+        let keyType: String
+        if let firstType = keyTypes.first, keyTypes.allSatisfy({ $0 == firstType }) {
+            keyType = firstType
+        } else {
+            keyType = "AnyHashable"
+        }
+
+        let valueType: String
+        if let firstType = valueTypes.first, valueTypes.allSatisfy({ $0 == firstType }) {
+            valueType = firstType
+        } else {
+            valueType = "Any"
+        }
 
         return "[\(keyType): \(valueType)]"
     }
 
-    private static func inferTupleType(_ initializer: ExprSyntax) -> String {
-        guard let tupleExpr = initializer.as(TupleExprSyntax.self) else { return "(name: tuple, type: Any)" }
+    private static func inferTupleExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let tupleExpr = expr.as(TupleExprSyntax.self) else { return "(name: tuple, type: Any)" }
 
         let elementTypes = tupleExpr.elements.map { element -> String in
-            let name = element.label?.text ?? "_"
-            let type = inferLiteralType(element.expression) ?? "Any"
-            if name == "_" {
-                return "\(type)"
+            if let name = element.label?.text, !name.isEmpty {
+                return "\(name)\(element.colon?.text ?? ":") \(inferExprSyntax(element.expression))"
             }
             else {
-                return "\(name): \(type)"
+                return inferExprSyntax(element.expression)
             }
         }
 
         return "(\(elementTypes.joined(separator: ", ")))"
+    }
+
+    private static func inferFunctionCallExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let funcExpr = expr.as(FunctionCallExprSyntax.self) else { return "FunctionCallExprSyntax none" }
+        return funcExpr.calledExpression.description
+    }
+
+    private static func inferClosureExprSyntax(_ expr: ExprSyntax) -> String {
+        guard let cloExpr = expr.as(ClosureExprSyntax.self) else { return "ClosureExprSyntax none" }
+        guard let signature = cloExpr.signature else { return "@escaping () -> ()" }
+
+        var result = ""
+        if let parameterClause = signature.parameterClause?.as(ClosureParameterClauseSyntax.self) {
+            result = parameterClause.leftParen.text
+            let types = parameterClause.parameters.compactMap { parameter in
+                inferTypeSyntax(parameter.type) 
+            }
+            result += types.joined(separator: ", ")
+            result += parameterClause.rightParen.text
+        }
+        if let returnClause = signature.returnClause {
+            result += "\(returnClause.arrow.text) "
+            let type = inferTypeSyntax(returnClause.type)
+            if !type.isEmpty {
+                result += type
+            }
+            else {
+                result += "()"
+            }
+        }
+        else {
+            result += "-> ()"
+        }
+        return "@escaping \(result)"
     }
 }
 

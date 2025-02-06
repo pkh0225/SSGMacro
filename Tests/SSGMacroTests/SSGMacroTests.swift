@@ -207,15 +207,130 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var closuer: ((Int) -> String)?
+                var closuer: ((Int) -> String)? // 주석
+                var closuer2: ((Int) -> String)! // 주석
+                var closuer3: ((Int) -> String) // 주석
+            
+                var closure4 = { (v: Int) -> String in
+                    return "123"
+                }
+                var closure5 = { () -> String in
+                    return "123"
+                }
+                var closure6 = { (v: Int) in
+                    print("123")
+                }
+                var closure7 = { (v: Int) -> (String) in
+                    return "123"
+                }
+                var closure8 = { (v: Int, v2: String) -> (String) in
+                    return "123"
+                }
+                var closure9 = { () in
+                    print("123")
+                }
+                var closure10 = {
+                    print("123")
+                }
+                var closure11 = { () -> String? in
+                    return "123"
+                }
+                var closure12 = { (v: Int?) in
+                    print("123")
+                }
             }
             """,
             expandedSource: """
             class TestClass {
-                var closuer: ((Int) -> String)?
+                var closuer: ((Int) -> String)? // 주석
+                var closuer2: ((Int) -> String)! // 주석
+                var closuer3: ((Int) -> String) // 주석
+
+                var closure4 = { (v: Int) -> String in
+                    return "123"
+                }
+                var closure5 = { () -> String in
+                    return "123"
+                }
+                var closure6 = { (v: Int) in
+                    print("123")
+                }
+                var closure7 = { (v: Int) -> (String) in
+                    return "123"
+                }
+                var closure8 = { (v: Int, v2: String) -> (String) in
+                    return "123"
+                }
+                var closure9 = { () in
+                    print("123")
+                }
+                var closure10 = {
+                    print("123")
+                }
+                var closure11 = { () -> String? in
+                    return "123"
+                }
+                var closure12 = { (v: Int?) in
+                    print("123")
+                }
 
                 func closuer(_ value: ((Int) -> String)?) -> Self {
                     self.closuer = value
+                    return self
+                }
+
+                func closuer2(_ value: @escaping ((Int) -> String)) -> Self {
+                    self.closuer2 = value
+                    return self
+                }
+
+                func closuer3(_ value: ((Int) -> String)) -> Self {
+                    self.closuer3 = value
+                    return self
+                }
+
+                func closure4(_ value: @escaping (Int) -> String) -> Self {
+                    self.closure4 = value
+                    return self
+                }
+
+                func closure5(_ value: @escaping () -> String) -> Self {
+                    self.closure5 = value
+                    return self
+                }
+
+                func closure6(_ value: @escaping (Int) -> ()) -> Self {
+                    self.closure6 = value
+                    return self
+                }
+
+                func closure7(_ value: @escaping (Int) -> (String)) -> Self {
+                    self.closure7 = value
+                    return self
+                }
+
+                func closure8(_ value: @escaping (Int, String) -> (String)) -> Self {
+                    self.closure8 = value
+                    return self
+                }
+
+                func closure9(_ value: @escaping () -> ()) -> Self {
+                    self.closure9 = value
+                    return self
+                }
+
+                func closure10(_ value: @escaping () -> ()) -> Self {
+                    self.closure10 = value
+                    return self
+                }
+
+                func closure11(_ value: @escaping () -> String?) -> Self {
+                    self.closure11 = value
+                    return self
+                }
+
+                func closure12(_ value: @escaping (Int?) -> ()) -> Self {
+                    self.closure12 = value
                     return self
                 }
             }
@@ -233,22 +348,22 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var tuple: (Int, String) = (123, "123")
-                var tuple2: (Int, String)?
-                var tuple3: (count: Int, name: String)?
-                var tuple4 = (123, "123")
-                var tuple5 = (name1: 123, name2: "123")
+                var tuple: (Int, String) = (123, "123") // 주석
+                var tuple2: (Int, String)? // 주석
+                var tuple3: (count: Int, name: String)? // 주석
+                var tuple4 = (123, "123") // 주석
+                var tuple5 = (name1: 123, name2: "123") // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var tuple: (Int, String) = (123, "123")
-                var tuple2: (Int, String)?
-                var tuple3: (count: Int, name: String)?
-                var tuple4 = (123, "123")
-                var tuple5 = (name1: 123, name2: "123")
+                var tuple: (Int, String) = (123, "123") // 주석
+                var tuple2: (Int, String)? // 주석
+                var tuple3: (count: Int, name: String)? // 주석
+                var tuple4 = (123, "123") // 주석
+                var tuple5 = (name1: 123, name2: "123") // 주석
 
-                func tuple(_ value: (Int, String) ) -> Self {
+                func tuple(_ value: (Int, String)) -> Self {
                     self.tuple = value
                     return self
                 }
@@ -291,6 +406,7 @@ final class MyMacroTests: XCTestCase {
                 var dic2 = [String: Int]()  // 타입이 명시된 빈 딕셔너리
                 var dic3: [String: Int] = [:]  // 타입이 명시된 빈 딕셔너리
                 var dic4 = ["key1": 1, "key2": 2]  // 초기화 값 기반 타입 추론
+                var dic5 = ["key1": 1, 123: "2"]  // 초기화 값 기반 타입 추론
             }
             """,
             expandedSource: """
@@ -299,6 +415,7 @@ final class MyMacroTests: XCTestCase {
                 var dic2 = [String: Int]()  // 타입이 명시된 빈 딕셔너리
                 var dic3: [String: Int] = [:]  // 타입이 명시된 빈 딕셔너리
                 var dic4 = ["key1": 1, "key2": 2]  // 초기화 값 기반 타입 추론
+                var dic5 = ["key1": 1, 123: "2"]  // 초기화 값 기반 타입 추론
 
                 func dic(_ value: Dictionary<String, Int>) -> Self {
                     self.dic = value
@@ -310,13 +427,18 @@ final class MyMacroTests: XCTestCase {
                     return self
                 }
 
-                func dic3(_ value: [String: Int] ) -> Self {
+                func dic3(_ value: [String: Int]) -> Self {
                     self.dic3 = value
                     return self
                 }
 
                 func dic4(_ value: [String: Int]) -> Self {
                     self.dic4 = value
+                    return self
+                }
+
+                func dic5(_ value: [AnyHashable: Any]) -> Self {
+                    self.dic5 = value
                     return self
                 }
             }
@@ -334,18 +456,18 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             struct TestStruct {
-                var typeAny: Any?
-                var viewType: StructSample.Type?
-                var actoinClass: ActoinClass?
-                var actoinClass2 = StructSample()
+                var typeAny: Any? // 주석
+                var viewType: StructSample.Type? // 주석
+                var actoinClass: ActoinClass? // 주석
+                var actoinClass2 = StructSample() // 주석
             }
             """,
             expandedSource: """
             struct TestStruct {
-                var typeAny: Any?
-                var viewType: StructSample.Type?
-                var actoinClass: ActoinClass?
-                var actoinClass2 = StructSample()
+                var typeAny: Any? // 주석
+                var viewType: StructSample.Type? // 주석
+                var actoinClass: ActoinClass? // 주석
+                var actoinClass2 = StructSample() // 주석
 
                 func typeAny(_ value: Any?) -> Self {
                     var copy = self
@@ -385,18 +507,18 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var typeAny: Any?
-                var viewType: StructSample.Type?
-                var actoinClass: ActoinClass?
-                var actoinClass2 = StructSample()
+                var typeAny: Any? // 주석
+                var viewType: StructSample.Type? // 주석
+                var actoinClass: ActoinClass? // 주석
+                var actoinClass2 = StructSample() // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var typeAny: Any?
-                var viewType: StructSample.Type?
-                var actoinClass: ActoinClass?
-                var actoinClass2 = StructSample()
+                var typeAny: Any? // 주석
+                var viewType: StructSample.Type? // 주석
+                var actoinClass: ActoinClass? // 주석
+                var actoinClass2 = StructSample() // 주석
 
                 func typeAny(_ value: Any?) -> Self {
                     self.typeAny = value
@@ -432,8 +554,8 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var array = Array<Int>()   // 타입이 명시된 빈 배열
-                var array1 = [Int]()   // 타입이 명시된 빈 배열
+                var array = Array<Int>()// 타입이 명시된 빈 배열
+                var array1 = [Int]() // 타입이 명시된 빈 배열
                 var array2: [String] = []  // 타입이 명시된 빈 배열
                 var array3 = [1, 2, 3]  // 초기화 값 기반 타입 추론
                 var mixedArray2 = [Any]()  // 혼합된 타입 배열
@@ -441,8 +563,8 @@ final class MyMacroTests: XCTestCase {
             """,
             expandedSource: """
             class TestClass {
-                var array = Array<Int>()   // 타입이 명시된 빈 배열
-                var array1 = [Int]()   // 타입이 명시된 빈 배열
+                var array = Array<Int>()// 타입이 명시된 빈 배열
+                var array1 = [Int]() // 타입이 명시된 빈 배열
                 var array2: [String] = []  // 타입이 명시된 빈 배열
                 var array3 = [1, 2, 3]  // 초기화 값 기반 타입 추론
                 var mixedArray2 = [Any]()  // 혼합된 타입 배열
@@ -457,7 +579,7 @@ final class MyMacroTests: XCTestCase {
                     return self
                 }
 
-                func array2(_ value: [String] ) -> Self {
+                func array2(_ value: [String]) -> Self {
                     self.array2 = value
                     return self
                 }
@@ -486,16 +608,16 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var aaa: Bool = true
-                var aaa2: Bool?
-                var aaa3 = false
+                var aaa: Bool = true // 주석
+                var aaa2: Bool? // 주석
+                var aaa3 = false // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var aaa: Bool = true
-                var aaa2: Bool?
-                var aaa3 = false
+                var aaa: Bool = true // 주석
+                var aaa2: Bool? // 주석
+                var aaa3 = false // 주석
 
                 func aaa(_ value: Bool) -> Self {
                     self.aaa = value
@@ -526,16 +648,16 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var aaa: String = "123"
-                var aaa2: String?
-                var aaa3 = "123"
+                var aaa: String = "123" // 주석
+                var aaa2: String? // 주석
+                var aaa3 = "123" // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var aaa: String = "123"
-                var aaa2: String?
-                var aaa3 = "123"
+                var aaa: String = "123" // 주석
+                var aaa2: String? // 주석
+                var aaa3 = "123" // 주석
 
                 func aaa(_ value: String) -> Self {
                     self.aaa = value
@@ -566,16 +688,16 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var aaa: Double = 1
-                var aaa2: Double?
-                var aaa3 = 1.0
+                var aaa: Double = 1 // 주석
+                var aaa2: Double? // 주석
+                var aaa3 = 1.0 // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var aaa: Double = 1
-                var aaa2: Double?
-                var aaa3 = 1.0
+                var aaa: Double = 1 // 주석
+                var aaa2: Double? // 주석
+                var aaa3 = 1.0 // 주석
 
                 func aaa(_ value: Double) -> Self {
                     self.aaa = value
@@ -606,16 +728,16 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro()
             class TestClass {
-                var aaa: Int = 1
-                var aaa2: Int?
-                var aaa3 = 1
+                var aaa: Int = 1 // 주석
+                var aaa2: Int? // 주석
+                var aaa3 = 1 // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var aaa: Int = 1
-                var aaa2: Int?
-                var aaa3 = 1
+                var aaa: Int = 1 // 주석
+                var aaa2: Int? // 주석
+                var aaa3 = 1 // 주석
 
                 func aaa(_ value: Int) -> Self {
                     self.aaa = value
@@ -646,12 +768,12 @@ final class MyMacroTests: XCTestCase {
             """
             @fluentSetterMacro("public")
             class TestClass {
-                var aaa = 1
+                var aaa = 1 // 주석
             }
             """,
             expandedSource: """
             class TestClass {
-                var aaa = 1
+                var aaa = 1 // 주석
 
                 public func aaa(_ value: Int) -> Self {
                     self.aaa = value

@@ -18,7 +18,7 @@ class ActoinClass {
     var array1 = [Int]()   // 타입이 명시된 빈 배열
     var array2: [String] = []  // 타입이 명시된 빈 배열
     var array3 = [1, 2, 3]  // 초기화 값 기반 타입 추론
-//    var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열
+    var mixedArray = [1, "text", true] as [Any]  // 혼합된 타입 배열
     var mixedArray2 = [Any]()  // 혼합된 타입 배열
 
     var dic = Dictionary<String, Int>()  // 타입이 명시된 빈 딕셔너리
@@ -34,6 +34,12 @@ class ActoinClass {
     var tuple5 = (name1: 123, name2: "123")
 
     var action: ((Int) -> Void)?
+    var action2: ((Int, String) -> String?)?
+    var closure = { (value: Int) -> String in
+        return "\(value)"
+    }
+
+    var closuer2: ((Int) -> String)! // 주석
 
     var typeAny: Any?
     var viewType: StructSample.Type?
