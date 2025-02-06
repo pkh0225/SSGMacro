@@ -8,13 +8,12 @@ import XCTest
 #if canImport(SSGMacroMacros)
 import SSGMacroMacros
 
-let testMacros: [String: Macro.Type] = [
-    "WeakSelfClosure": WeakSelfClosure.self,
+let fluentSetterMacro: [String: Macro.Type] = [
     "fluentSetterMacro": FluentSetterMacro.self
 ]
 #endif
 
-final class MyMacroTests: XCTestCase {
+final class FluentSetterMacroTests: XCTestCase {
 
     func testEnumFluentSetterMacro() throws {
         #if canImport(SSGMacroMacros)
@@ -35,7 +34,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -75,7 +74,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -116,7 +115,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -142,7 +141,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -194,7 +193,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -335,7 +334,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -389,7 +388,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -443,7 +442,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -494,7 +493,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -541,7 +540,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -595,7 +594,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -635,7 +634,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -675,7 +674,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -715,7 +714,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -755,7 +754,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
@@ -781,30 +780,7 @@ final class MyMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
-        )
-        #else
-        throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
-    }
-
-    func testWeaSelfMacro() throws {
-        #if canImport(SSGMacroMacros)
-        assertMacroExpansion(
-            """
-            let action = #WeakSelfClosure {
-                print("run")
-            }
-            """,
-            expandedSource: """
-            let action = { [weak self] in
-                guard let self else {
-                    return
-                }
-                    print("run")
-            }
-            """,
-            macros: testMacros
+            macros: fluentSetterMacro
         )
         #else
         throw XCTSkip("macros are only supported when running tests for the host platform")
