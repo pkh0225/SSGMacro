@@ -4,7 +4,7 @@ SSGMacro
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ### sample data set
-```
+```swift
 final class MyMacroTests: XCTestCase {
 
     func testEnumFluentSetterMacro() throws {
