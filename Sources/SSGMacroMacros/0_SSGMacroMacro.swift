@@ -7,6 +7,6 @@ import SwiftSyntaxMacros
 struct PublicMemeberwiseInitMacroPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         FluentSetterMacro.self,
-        WeakSelfClosure.self
+        UserDefaultMacro.self
     ]
 }

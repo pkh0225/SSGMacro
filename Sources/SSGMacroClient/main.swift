@@ -65,7 +65,7 @@ class ActoinClass {
     }
 
     func run2() {
-        self.action = #WeakSelfClosure { value in
+        self.action = { value in
             print(self.aaa + value)
         }
         self.action?(123)
@@ -117,5 +117,53 @@ let sample2 = StructSample()
 
 print("firstProp: \(sample2.first), secondProp: \(sample2.second), ppp: \(sample2.ppp)")
 
+
+print()
+print("--- test UserDefault ---")
+let groupID1: String? = "group.com.example.app"
+struct DI_UserDefault {
+    @UserDefault(key: "WG_USERDEFAULT_APP_SERVICE_TYPE", groupID: groupID1)
+    public static var serviceType: String?
+    @UserDefault(key: "WG_USERDEFAULT_APP_FIRST_YN")
+    public static var appFirstYN: String?
+
+    @UserDefault(key: "WG_USERDEFAULT_TEST")
+    public static var test: Int?
+}
+
+
+print()
+print(DI_UserDefault.serviceType)
+print(DI_UserDefault.appFirstYN)
+print(DI_UserDefault.test)
+
+DI_UserDefault.serviceType = "serviceType"
+DI_UserDefault.appFirstYN = "appFirstYN"
+DI_UserDefault.test = 111
+
+print()
+print(DI_UserDefault.serviceType)
+print(DI_UserDefault.appFirstYN)
+print(DI_UserDefault.test)
+
+
+DI_UserDefault.serviceType = "serviceType2222"
+DI_UserDefault.appFirstYN = "appFirstYN22222"
+DI_UserDefault.test = 2222
+
+print()
+print(DI_UserDefault.serviceType)
+print(DI_UserDefault.appFirstYN)
+print(DI_UserDefault.test)
+
+
+DI_UserDefault.serviceType = nil
+DI_UserDefault.appFirstYN = nil
+DI_UserDefault.test = nil
+
+print()
+print(DI_UserDefault.serviceType)
+print(DI_UserDefault.appFirstYN)
+print(DI_UserDefault.test)
 
 
